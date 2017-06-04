@@ -1,4 +1,27 @@
 /*
+ *  This software is a computer program whose purpose is to compute validitiy of
+ *  identification data.
+ *
+ *  Copyright (C) 2017 Th!nk Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, only version 2.0.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+/* Original LibreAuth License */
+
+/*
  * Copyright Rodolphe Breard (2015)
  * Author: Rodolphe Breard (2015)
  *
@@ -34,8 +57,8 @@
 
 
 //!
-//! [![Build Status](https://api.travis-ci.org/breard-r/libreauth.svg?branch=master)](https://travis-ci.org/breard-r/libreauth)
-//! [![LibreAuth on crates.io](https://img.shields.io/crates/v/libreauth.svg)](https://crates.io/crates/libreauth)
+//! [![Build Status](https://api.travis-ci.org/breard-r/boringauth.svg?branch=master)](https://travis-ci.org/breard-r/boringauth)
+//! [![LibreAuth on crates.io](https://img.shields.io/crates/v/boringauth.svg)](https://crates.io/crates/boringauth)
 //!
 //! LibreAuth is a collection of tools for user authentication.
 //!

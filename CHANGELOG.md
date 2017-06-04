@@ -6,9 +6,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 
 ### Added
+### Changed
+
+## [0.6.0] - 2017-06-04
+
+### Added
 - Password authentication.
+- Generic parsing module for PHC modular crypt format.
 
 ### Changed
+- The project has been forked from LibreAuth and renamed to BoringAuth.
+- The **ring** cryptographic primitives crate has replaced the **rust-crypto** crate.
+- The modifications to LibreAuth together with the original work are released combined under the GPL v2.0 license.
 - The oath module does not not expose sub-modules anymore.
 
 

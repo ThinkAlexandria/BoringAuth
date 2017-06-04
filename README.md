@@ -1,9 +1,12 @@
-# LibreAuth
+# BoringAuth
 
-[![Build Status](https://api.travis-ci.org/breard-r/libreauth.svg?branch=master)](https://travis-ci.org/breard-r/libreauth)
-[![LibreAuth on crates.io](https://img.shields.io/crates/v/libreauth.svg)](https://crates.io/crates/libreauth)
+[![Build Status](https://api.travis-ci.org/ThinkAlexandria/boringauth.svg?branch=master)](https://travis-ci.org/breard-r/boringauth)
+[![LibreAuth on crates.io](https://img.shields.io/crates/v/boringauth.svg)](https://crates.io/crates/boringauth)
 
-LibreAuth is a collection of tools for user authentication.
+BoringAuth is a collection of tools for user authentication. BoringAuth is a fork
+of [LibreAuth](https://github.com/breard-r/boringauth) that chooses to use the
+actively developed **ring** crypto crate over the dead **rust-crypto** crate for
+its crypto primitives.
 
 
 ## Features
@@ -11,8 +14,8 @@ LibreAuth is a collection of tools for user authentication.
 - Password / passphrase authentication
   - [x] no character-set limitation
   - [x] reasonable lenth limit ([security vs. DOS](http://arstechnica.com/security/2013/09/long-passwords-are-good-but-too-much-length-can-be-bad-for-security/))
-  - [ ] strong, evolutive and retro-compatible password derivation functions
-  - [ ] crypt() compatibility
+  - [x] strong, evolutive and retro-compatible password derivation functions
+  - [x] crypt() compatibility
 - HOTP - HMAC-based One-time Password Algorithm ([OATH](http://www.openauthentication.org/) - [RFC 4226](https://tools.ietf.org/html/rfc4226))
   - [x] the key can be passed as bytes, an ASCII string, an hexadicimal string or a base32 string
   - [x] customizable counter
@@ -40,20 +43,20 @@ LibreAuth is a collection of tools for user authentication.
 
 ## Using within a Rust project
 
-You can find LibreAuth on [crates.io](https://crates.io/crates/libreauth) and include it in your `Cargo.toml`:
+You can find BoringAuth on [crates.io](https://crates.io/crates/boringauth) and include it in your `Cargo.toml`:
 
 ```toml
-libreauth = "*"
+boringauth = "*"
 ```
 
 
 ## Using outside Rust
 
-In order to build LibreAuth, you will need both the [rust compiler](https://github.com/rust-lang/rust) and [cargo](https://github.com/rust-lang/cargo).
+In order to build BoringAuth, you will need both the [rust compiler](https://github.com/rust-lang/rust) and [cargo](https://github.com/rust-lang/cargo).
 
 ```ShellSession
-$ git clone https://github.com/breard-r/libreauth.git
-$ cd libreauth
+$ git clone https://github.com/ThinkAlexandria/boringauth.git
+$ cd boringauth
 $ make
 $ make install prefix=/usr
 ```
@@ -64,11 +67,10 @@ $ make install prefix=/usr
 
 ### Rust
 
-More examples are available in the [documentation](https://what.tf/libreauth/).
 
 ```rust
-extern crate libreauth;
-use libreauth::oath::TOTPBuilder;
+extern crate boringauth;
+use boringauth::oath::TOTPBuilder;
 
 let key = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ".to_string();
 let code = TOTPBuilder::new()
@@ -83,18 +85,18 @@ assert_eq!(code.len(), 6);
 
 ```C
 #include <stdio.h>
-#include <libreauth.h>
+#include <boringauth.h>
 
 int main(void) {
-  struct libreauth_totp_cfg cfg;
+  struct boringauth_totp_cfg cfg;
   char   code[7], key[] = "12345678901234567890";
 
-  if (libreauth_totp_init(&cfg) != LIBREAUTH_OTP_SUCCESS) {
+  if (boringauth_totp_init(&cfg) != LIBREAUTH_OTP_SUCCESS) {
     return 1;
   }
   cfg.key = key;
   cfg.key_len = sizeof(key);
-  if (libreauth_totp_generate(&cfg, code) != LIBREAUTH_OTP_SUCCESS) {
+  if (boringauth_totp_generate(&cfg, code) != LIBREAUTH_OTP_SUCCESS) {
     return 2;
   }
 
@@ -105,7 +107,7 @@ int main(void) {
 ```
 
 ```ShellSession
-$ cc -o totp totp.c -llibreauth
+$ cc -o totp totp.c -lboringauth
 $ ./totp
 848085
 ```
@@ -132,15 +134,15 @@ class TOTPcfg(Structure):
 
 def get_totp():
     key = b'12345678901234567890'
-    lib_path = find_library('libreauth') or 'target/release/liblibreauth.so'
+    lib_path = find_library('boringauth') or 'target/release/libboringauth.so'
     lib = cdll.LoadLibrary(lib_path)
     cfg = TOTPcfg()
-    if lib.libreauth_totp_init(byref(cfg)) != 0:
+    if lib.boringauth_totp_init(byref(cfg)) != 0:
         return
     cfg.key_len = len(key)
     cfg.key = c_char_p(key)
     code = create_string_buffer(b'\000' * cfg.output_len)
-    if lib.libreauth_totp_generate(byref(cfg), code) != 0:
+    if lib.boringauth_totp_generate(byref(cfg), code) != 0:
         return
     return str(code.value, encoding="utf-8")
 

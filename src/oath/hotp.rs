@@ -1,4 +1,27 @@
 /*
+ *  This software is a computer program whose purpose is to compute validitiy of
+ *  identification data.
+ *
+ *  Copyright (C) 2017 Th!nk Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, only version 2.0.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+/* Original LibreAuth License */
+
+/*
  * Copyright Rodolphe Breard (2015)
  * Author: Rodolphe Breard (2015)
  *
@@ -96,7 +119,7 @@ impl HOTP {
     /// ## Examples
     /// ```
     /// let key_ascii = "12345678901234567890".to_owned();
-    /// let mut hotp = libreauth::oath::HOTPBuilder::new()
+    /// let mut hotp = boringauth::oath::HOTPBuilder::new()
     ///     .ascii_key(&key_ascii)
     ///     .finalize()
     ///     .unwrap();
@@ -133,7 +156,7 @@ impl HOTP {
     /// ```
     /// let key_ascii = "12345678901234567890".to_owned();
     /// let user_code = "755224".to_owned();
-    /// let valid = libreauth::oath::HOTPBuilder::new()
+    /// let valid = boringauth::oath::HOTPBuilder::new()
     ///     .ascii_key(&key_ascii)
     ///     .finalize()
     ///     .unwrap()
@@ -160,7 +183,7 @@ impl HOTP {
 ///
 ///```
 /// let key = vec![49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48];
-/// let mut hotp = libreauth::oath::HOTPBuilder::new()
+/// let mut hotp = boringauth::oath::HOTPBuilder::new()
 ///     .key(&key)
 ///     .finalize()
 ///     .unwrap();
@@ -168,7 +191,7 @@ impl HOTP {
 ///
 ///```
 /// let key_ascii = "12345678901234567890".to_owned();
-/// let mut hotp = libreauth::oath::HOTPBuilder::new()
+/// let mut hotp = boringauth::oath::HOTPBuilder::new()
 ///     .ascii_key(&key_ascii)
 ///     .counter(42)
 ///     .finalize()
@@ -177,7 +200,7 @@ impl HOTP {
 ///
 ///```
 /// let key_hex = "3132333435363738393031323334353637383930".to_owned();
-/// let mut hotp = libreauth::oath::HOTPBuilder::new()
+/// let mut hotp = boringauth::oath::HOTPBuilder::new()
 ///     .hex_key(&key_hex)
 ///     .counter(69)
 ///     .output_len(8)
@@ -186,10 +209,10 @@ impl HOTP {
 ///
 ///```
 /// let key_base32 = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ".to_owned();
-/// let mut hotp = libreauth::oath::HOTPBuilder::new()
+/// let mut hotp = boringauth::oath::HOTPBuilder::new()
 ///     .base32_key(&key_base32)
 ///     .output_len(8)
-///     .hash_function(libreauth::oath::HashFunction::Sha256)
+///     .hash_function(boringauth::oath::HashFunction::Sha256)
 ///     .finalize();
 ///```
 pub struct HOTPBuilder {
@@ -269,7 +292,7 @@ pub mod cbindings {
     }
 
     #[no_mangle]
-    pub extern "C" fn libreauth_hotp_init(cfg: *mut HOTPcfg) -> ErrorCode {
+    pub extern "C" fn boringauth_hotp_init(cfg: *mut HOTPcfg) -> ErrorCode {
         let res: Result<&mut HOTPcfg, ErrorCode> = otp_init!(HOTPcfg, cfg, counter, 0);
         match res {
             Ok(_) => ErrorCode::Success,
@@ -278,7 +301,7 @@ pub mod cbindings {
     }
 
     #[no_mangle]
-    pub extern "C" fn libreauth_hotp_generate(cfg: *const HOTPcfg,
+    pub extern "C" fn boringauth_hotp_generate(cfg: *const HOTPcfg,
                                               code: *mut libc::uint8_t)
                                               -> ErrorCode {
         let cfg = get_value_or_errno!(c::get_cfg(cfg));
@@ -303,7 +326,7 @@ pub mod cbindings {
     }
 
     #[no_mangle]
-    pub extern "C" fn libreauth_hotp_is_valid(cfg: *const HOTPcfg,
+    pub extern "C" fn boringauth_hotp_is_valid(cfg: *const HOTPcfg,
                                               code: *const libc::uint8_t)
                                               -> libc::int32_t {
         let cfg = get_value_or_false!(c::get_cfg(cfg));

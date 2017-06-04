@@ -1,4 +1,27 @@
 /*
+ *  This software is a computer program whose purpose is to compute validitiy of
+ *  identification data.
+ *
+ *  Copyright (C) 2017 Th!nk Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, only version 2.0.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+/* Original LibreAuth License */
+
+/*
  * Copyright Rodolphe Breard (2015)
  * Author: Rodolphe Breard (2015)
  *
@@ -66,7 +89,7 @@ impl TOTP {
     /// ## Examples
     /// ```
     /// let key_base32 = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ".to_owned();
-    /// let mut totp = libreauth::oath::TOTPBuilder::new()
+    /// let mut totp = boringauth::oath::TOTPBuilder::new()
     ///     .base32_key(&key_base32)
     ///     .finalize()
     ///     .unwrap();
@@ -95,7 +118,7 @@ impl TOTP {
     /// ```
     /// let key_ascii = "12345678901234567890".to_owned();
     /// let user_code = "755224".to_owned();
-    /// let valid = libreauth::oath::TOTPBuilder::new()
+    /// let valid = boringauth::oath::TOTPBuilder::new()
     ///     .ascii_key(&key_ascii)
     ///     .finalize()
     ///     .unwrap()
@@ -129,7 +152,7 @@ impl TOTP {
 ///
 ///```
 /// let key = vec![49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48];
-/// let mut totp = libreauth::oath::TOTPBuilder::new()
+/// let mut totp = boringauth::oath::TOTPBuilder::new()
 ///     .key(&key)
 ///     .finalize()
 ///     .unwrap();
@@ -137,7 +160,7 @@ impl TOTP {
 ///
 ///```
 /// let key_ascii = "12345678901234567890".to_owned();
-/// let mut totp = libreauth::oath::TOTPBuilder::new()
+/// let mut totp = boringauth::oath::TOTPBuilder::new()
 ///     .ascii_key(&key_ascii)
 ///     .period(42)
 ///     .finalize();
@@ -145,7 +168,7 @@ impl TOTP {
 ///
 ///```
 /// let key_hex = "3132333435363738393031323334353637383930".to_owned();
-/// let mut totp = libreauth::oath::TOTPBuilder::new()
+/// let mut totp = boringauth::oath::TOTPBuilder::new()
 ///     .hex_key(&key_hex)
 ///     .timestamp(1234567890)
 ///     .finalize();
@@ -153,10 +176,10 @@ impl TOTP {
 ///
 ///```
 /// let key_base32 = "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ".to_owned();
-/// let mut totp = libreauth::oath::TOTPBuilder::new()
+/// let mut totp = boringauth::oath::TOTPBuilder::new()
 ///     .base32_key(&key_base32)
 ///     .output_len(8)
-///     .hash_function(libreauth::oath::HashFunction::Sha256)
+///     .hash_function(boringauth::oath::HashFunction::Sha256)
 ///     .finalize();
 ///```
 pub struct TOTPBuilder {
@@ -291,7 +314,7 @@ pub mod cbindings {
     }
 
     #[no_mangle]
-    pub extern "C" fn libreauth_totp_init(cfg: *mut TOTPcfg) -> ErrorCode {
+    pub extern "C" fn boringauth_totp_init(cfg: *mut TOTPcfg) -> ErrorCode {
         let res: Result<&mut TOTPcfg, ErrorCode> = otp_init!(TOTPcfg,
                                                              cfg,
                                                              timestamp,
@@ -311,7 +334,7 @@ pub mod cbindings {
     }
 
     #[no_mangle]
-    pub extern "C" fn libreauth_totp_generate(cfg: *const TOTPcfg,
+    pub extern "C" fn boringauth_totp_generate(cfg: *const TOTPcfg,
                                               code: *mut libc::uint8_t)
                                               -> ErrorCode {
         let cfg = get_value_or_errno!(c::get_cfg(cfg));
@@ -338,7 +361,7 @@ pub mod cbindings {
     }
 
     #[no_mangle]
-    pub extern "C" fn libreauth_totp_is_valid(cfg: *const TOTPcfg,
+    pub extern "C" fn boringauth_totp_is_valid(cfg: *const TOTPcfg,
                                               code: *const libc::uint8_t)
                                               -> libc::int32_t {
         let cfg = get_value_or_false!(c::get_cfg(cfg));

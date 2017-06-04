@@ -36,8 +36,8 @@
 #include <strings.h>
 #include <string.h>
 #include <assert.h>
-#include <libreauth.h>
-#include "libreauth_tests.h"
+#include <boringauth.h>
+#include "boringauth_tests.h"
 
 #define DEFAULT_BUFF_LEN 6
 #define BIGGER_BUFF_LEN  8
@@ -46,12 +46,12 @@
 static uint32_t test_basic_totp(void) {
     test_name("totp: test_basic_totp");
 
-    struct libreauth_totp_cfg cfg;
+    struct boringauth_totp_cfg cfg;
     const char key[] = "12345678901234567890";
     char code[DEFAULT_BUFF_LEN + 1] = {0};
 
 
-    uint32_t ret = libreauth_totp_init(&cfg);
+    uint32_t ret = boringauth_totp_init(&cfg);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(cfg.key == NULL);
     assert(cfg.key_len == 0);
@@ -68,14 +68,14 @@ static uint32_t test_basic_totp(void) {
     cfg.key = key;
     cfg.key_len = sizeof(key);
 
-    ret = libreauth_totp_generate(&cfg, code);
+    ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == DEFAULT_BUFF_LEN);
-    assert(!libreauth_totp_is_valid(NULL, "755224"));
-    assert(!libreauth_totp_is_valid(&cfg, "4755224"));
-    assert(!libreauth_totp_is_valid(&cfg, "!@#$%^"));
-    assert(!libreauth_totp_is_valid(&cfg, ""));
-    assert(!libreauth_totp_is_valid(&cfg, NULL));
+    assert(!boringauth_totp_is_valid(NULL, "755224"));
+    assert(!boringauth_totp_is_valid(&cfg, "4755224"));
+    assert(!boringauth_totp_is_valid(&cfg, "!@#$%^"));
+    assert(!boringauth_totp_is_valid(&cfg, ""));
+    assert(!boringauth_totp_is_valid(&cfg, NULL));
 
     return 1;
 }
@@ -83,11 +83,11 @@ static uint32_t test_basic_totp(void) {
 static uint32_t test_advanced_totp(void) {
     test_name("totp: test_advanced_totp");
 
-    struct libreauth_totp_cfg cfg;
+    struct boringauth_totp_cfg cfg;
     const char key[] = "12345678901234567890123456789012";
     char code[BIGGER_BUFF_LEN + 1];
 
-    uint32_t ret = libreauth_totp_init(&cfg);
+    uint32_t ret = boringauth_totp_init(&cfg);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
 
     cfg.key = key;
@@ -96,18 +96,18 @@ static uint32_t test_advanced_totp(void) {
     cfg.output_len = BIGGER_BUFF_LEN;
     cfg.hash_function = LIBREAUTH_OATH_SHA_256;
 
-    ret = libreauth_totp_generate(&cfg, code);
+    ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == BIGGER_BUFF_LEN);
     assert(strncmp(code, "68084774", BIGGER_BUFF_LEN + 1) == 0);
 
-    assert(libreauth_totp_is_valid(&cfg, "68084774"));
-    assert(!libreauth_totp_is_valid(NULL, "68084774"));
-    assert(!libreauth_totp_is_valid(&cfg, "68084775"));
-    assert(!libreauth_totp_is_valid(&cfg, "46808477"));
-    assert(!libreauth_totp_is_valid(&cfg, "!@#$%^&*"));
-    assert(!libreauth_totp_is_valid(&cfg, ""));
-    assert(!libreauth_totp_is_valid(&cfg, NULL));
+    assert(boringauth_totp_is_valid(&cfg, "68084774"));
+    assert(!boringauth_totp_is_valid(NULL, "68084774"));
+    assert(!boringauth_totp_is_valid(&cfg, "68084775"));
+    assert(!boringauth_totp_is_valid(&cfg, "46808477"));
+    assert(!boringauth_totp_is_valid(&cfg, "!@#$%^&*"));
+    assert(!boringauth_totp_is_valid(&cfg, ""));
+    assert(!boringauth_totp_is_valid(&cfg, NULL));
 
     return 1;
 }
@@ -115,10 +115,10 @@ static uint32_t test_advanced_totp(void) {
 static uint32_t test_tolerance(void) {
     test_name("totp: test_tolerance");
 
-    struct libreauth_totp_cfg cfg;
+    struct boringauth_totp_cfg cfg;
     const char key[] = "12345678901234567890";
 
-    uint32_t ret = libreauth_totp_init(&cfg);
+    uint32_t ret = boringauth_totp_init(&cfg);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
 
     cfg.key = key;
@@ -127,28 +127,28 @@ static uint32_t test_tolerance(void) {
 
     cfg.positive_tolerance = 0;
     cfg.negative_tolerance = 0;
-    assert(!libreauth_totp_is_valid(&cfg, "590587"));
+    assert(!boringauth_totp_is_valid(&cfg, "590587"));
     cfg.positive_tolerance = 1;
     cfg.negative_tolerance = 1;
-    assert(libreauth_totp_is_valid(&cfg, "590587"));
+    assert(boringauth_totp_is_valid(&cfg, "590587"));
     cfg.positive_tolerance = 1;
     cfg.negative_tolerance = 1;
-    assert(!libreauth_totp_is_valid(&cfg, "240500"));
+    assert(!boringauth_totp_is_valid(&cfg, "240500"));
     cfg.positive_tolerance = 2;
     cfg.negative_tolerance = 2;
-    assert(libreauth_totp_is_valid(&cfg, "240500"));
+    assert(boringauth_totp_is_valid(&cfg, "240500"));
     cfg.positive_tolerance = 0;
     cfg.negative_tolerance = 0;
-    assert(!libreauth_totp_is_valid(&cfg, "980357"));
+    assert(!boringauth_totp_is_valid(&cfg, "980357"));
     cfg.positive_tolerance = 1;
     cfg.negative_tolerance = 1;
-    assert(libreauth_totp_is_valid(&cfg, "980357"));
+    assert(boringauth_totp_is_valid(&cfg, "980357"));
     cfg.positive_tolerance = 1;
     cfg.negative_tolerance = 1;
-    assert(!libreauth_totp_is_valid(&cfg, "186057"));
+    assert(!boringauth_totp_is_valid(&cfg, "186057"));
     cfg.positive_tolerance = 2;
     cfg.negative_tolerance = 2;
-    assert(libreauth_totp_is_valid(&cfg, "186057"));
+    assert(boringauth_totp_is_valid(&cfg, "186057"));
 
     return 1;
 }
@@ -156,7 +156,7 @@ static uint32_t test_tolerance(void) {
 static uint32_t test_init_null_ptr(void) {
     test_name("totp: test_init_null_ptr");
 
-    uint32_t ret = libreauth_totp_init(NULL);
+    uint32_t ret = boringauth_totp_init(NULL);
     assert(ret == LIBREAUTH_OATH_CFG_NULL_PTR);
 
     return 1;
@@ -165,30 +165,30 @@ static uint32_t test_init_null_ptr(void) {
 static uint32_t test_generate_null_ptr(void) {
     test_name("totp: test_generate_null_ptr");
 
-    struct libreauth_totp_cfg cfg;
+    struct boringauth_totp_cfg cfg;
     const char key[] = "12345678901234567890";
     char code[] = "qwerty";
 
-    libreauth_totp_init(&cfg);
+    boringauth_totp_init(&cfg);
 
-    uint32_t ret = libreauth_totp_generate(NULL, code);
+    uint32_t ret = boringauth_totp_generate(NULL, code);
     assert(ret == LIBREAUTH_OATH_CFG_NULL_PTR);
     assert(strcmp(code, "qwerty") == 0);
 
-    ret = libreauth_totp_generate(&cfg, code);
+    ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_KEY_NULL_PTR);
 
     cfg.key = key;
 
-    ret = libreauth_totp_generate(&cfg, code);
+    ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_INVALID_KEY_LEN);
 
     cfg.key_len = sizeof(key);
 
-    ret = libreauth_totp_generate(&cfg, NULL);
+    ret = boringauth_totp_generate(&cfg, NULL);
     assert(ret == LIBREAUTH_OATH_CODE_NULL_PTR);
 
-    ret = libreauth_totp_generate(&cfg, code);
+    ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
 
     return 1;
@@ -197,25 +197,25 @@ static uint32_t test_generate_null_ptr(void) {
 static uint32_t test_invalid_base(void) {
     test_name("totp: test_invalid_base");
 
-    struct libreauth_totp_cfg cfg;
+    struct boringauth_totp_cfg cfg;
     const char key[] = "12345678901234567890", base[] = "0123456789ABCDEF";
     char code[DEFAULT_BUFF_LEN + 1];
 
-    libreauth_totp_init(&cfg);
+    boringauth_totp_init(&cfg);
 
     cfg.key = key;
     cfg.key_len = sizeof(key);
     cfg.output_base = base;
 
-    uint32_t ret = libreauth_totp_generate(&cfg, code);
+    uint32_t ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_INVALID_BASE_LEN);
     cfg.output_base_len = 1;
-    ret = libreauth_totp_generate(&cfg, code);
+    ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_INVALID_BASE_LEN);
 
     cfg.output_base_len = sizeof(base);
 
-    ret = libreauth_totp_generate(&cfg, code);
+    ret = boringauth_totp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
 
     return 1;

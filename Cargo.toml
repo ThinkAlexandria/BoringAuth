@@ -1,24 +1,24 @@
 [package]
-name = "libreauth"
+name = "boringauth"
 version = "0.6.0"
 authors = ["Rodolphe Breard <rodolphe@what.tf>", "YetAnotherMinion <yam@thinkalexandria.com"]
-description = "Collection of tools for user authentication."
-documentation = "https://what.tf/libreauth/"
-repository = "https://github.com/breard-r/libreauth"
+description = "Straightforward password, passphrase, TOTP, and HOTP user authentication"
+#documentation = "https://todo.txt"
+repository = "https://github.com/ThinkAlexandria/BoringAuth.git"
 readme = "README.md"
-keywords = ["authentication", "2fa", "otp", "hotp", "totp"]
+keywords = ["authentication", "2fa", "otp", "hotp", "totp", "password", "phc", "crypt"]
 license = "CECILL-2.1"
 include = ["src/**/*", "Cargo.toml", "LICENSE.txt"]
 
 [lib]
-name = "libreauth"
+name = "boringauth"
 crate-type = ["rlib", "dylib"]
 
 [features]
 cbindings = ["libc"]
 
 [dependencies]
-ring = "0.7.5"
+ring = "0.9"
 base32 = "^0.3.0"
 time = "^0.1.31"
 rand = "0.3.15"

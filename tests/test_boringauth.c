@@ -35,7 +35,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include "libreauth_tests.h"
+#include "boringauth_tests.h"
 
 
 void test_name(const char *name) {

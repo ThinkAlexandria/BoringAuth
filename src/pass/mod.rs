@@ -1,4 +1,27 @@
 /*
+ *  This software is a computer program whose purpose is to compute validitiy of
+ *  identification data.
+ *
+ *  Copyright (C) 2017 Th!nk Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, only version 2.0.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+/* Original LibreAuth License */
+
+/*
  * Copyright Rodolphe Breard (2016)
  * Author: Rodolphe Breard (2016)
  *
@@ -96,9 +119,9 @@
 //! ## Examples
 //! ```rust
 //! let password = "correct horse battery staple";
-//! let derived_password = libreauth::pass::derive_password(password).unwrap();
-//! assert!(! libreauth::pass::is_valid("bad password", &derived_password));
-//! assert!(libreauth::pass::is_valid(&password, &derived_password));
+//! let derived_password = boringauth::pass::derive_password(password).unwrap();
+//! assert!(! boringauth::pass::is_valid("bad password", &derived_password));
+//! assert!(boringauth::pass::is_valid(&password, &derived_password));
 //! ```
 //!
 //! [1]: https://en.wikipedia.org/wiki/Crypt_(C)#Key_Derivation_Functions_Supported_by_crypt
@@ -140,7 +163,7 @@ pub const PASSWORD_MAX_LEN: usize = 128;
 /// Error codes used both in the rust and C interfaces.
 ///
 /// ## C interface
-/// The C interface uses an enum of type `libreauth_pass_errno` and the members has been renamed
+/// The C interface uses an enum of type `boringauth_pass_errno` and the members has been renamed
 /// as follows:
 /// <style>
 /// .vcentered_table th, .vcentered_table td {vertical-align: middle;}
@@ -321,7 +344,7 @@ fn from_reference_hash(hash_info: &PHCEncoded)
 /// ## Examples
 /// ```rust
 /// let password = "1234567890";
-/// let stored_password = libreauth::pass::derive_password(password).unwrap();
+/// let stored_password = boringauth::pass::derive_password(password).unwrap();
 /// ```
 pub fn derive_password(password: &str) -> Result<String, ErrorCode> {
     if password.len() < PASSWORD_MIN_LEN {
@@ -358,15 +381,15 @@ pub fn derive_password(password: &str) -> Result<String, ErrorCode> {
 /// ## Examples
 /// ```rust
 /// let password = "correct horse battery staple";
-/// let stored_password = libreauth::pass::derive_password(password).unwrap();
-/// assert!(! libreauth::pass::is_valid("bad password", &stored_password));
-/// assert!(libreauth::pass::is_valid(&password, &stored_password));
+/// let stored_password = boringauth::pass::derive_password(password).unwrap();
+/// assert!(! boringauth::pass::is_valid("bad password", &stored_password));
+/// assert!(boringauth::pass::is_valid(&password, &stored_password));
 /// ```
 ///
 /// ```rust
 /// let stored_reference = "$pbkdf2_sha256$i=21000$45217803$a607a72c2c92357a4568b998c5f708f801f0b1ffbaea205357e08e4d325830c9";
-/// assert!(! libreauth::pass::is_valid("bad password", stored_reference));
-/// assert!(libreauth::pass::is_valid("password123", stored_reference));
+/// assert!(! boringauth::pass::is_valid("bad password", stored_reference));
+/// assert!(boringauth::pass::is_valid("password123", stored_reference));
 /// ```
 pub fn is_valid(password: &str, reference: &str) -> bool {
     let hash_info: PHCEncoded = match PHCEncoded::from_string(reference) {
@@ -431,7 +454,7 @@ mod cbindings {
     /// const char password[] = "correct horse battery staple";
     /// uint8_t derived_password[LIBREAUTH_PASS_STORAGE_LEN];
     ///
-    /// libreauth_pass_errno ret = libreauth_pass_derive_password(password, derived_password, LIBREAUTH_PASS_STORAGE_LEN);
+    /// boringauth_pass_errno ret = boringauth_pass_derive_password(password, derived_password, LIBREAUTH_PASS_STORAGE_LEN);
     /// if (ret == LIBREAUTH_PASS_SUCCESS) {
     ///     // Store derived_password.
     /// } else {
@@ -439,7 +462,7 @@ mod cbindings {
     /// }
     /// ```
     #[no_mangle]
-    pub extern "C" fn libreauth_pass_derive_password(password: *const libc::c_char,
+    pub extern "C" fn boringauth_pass_derive_password(password: *const libc::c_char,
                                                      storage: *mut libc::uint8_t,
                                                      storage_len: libc::size_t)
                                                      -> ErrorCode {
@@ -476,13 +499,13 @@ mod cbindings {
     ///       invalid_pass[] = "123456";
     /// uint8_t storage[LIBREAUTH_PASS_STORAGE_LEN];
     ///
-    /// libreauth_pass_errno ret = libreauth_pass_derive_password(password, storage, LIBREAUTH_PASS_STORAGE_LEN);
+    /// boringauth_pass_errno ret = boringauth_pass_derive_password(password, storage, LIBREAUTH_PASS_STORAGE_LEN);
     /// assert(ret == LIBREAUTH_PASS_SUCCESS);
-    /// assert(libreauth_pass_is_valid(password, storage));
-    /// assert(!libreauth_pass_is_valid(invalid_pass, storage));
+    /// assert(boringauth_pass_is_valid(password, storage));
+    /// assert(!boringauth_pass_is_valid(invalid_pass, storage));
     /// ```
     #[no_mangle]
-    pub extern "C" fn libreauth_pass_is_valid(password: *const libc::c_char,
+    pub extern "C" fn boringauth_pass_is_valid(password: *const libc::c_char,
                                               reference: *const libc::c_char)
                                               -> libc::int32_t {
         let c_password = unsafe {
@@ -500,9 +523,9 @@ mod cbindings {
 }
 
 #[cfg(feature = "cbindings")]
-pub use self::cbindings::libreauth_pass_derive_password;
+pub use self::cbindings::boringauth_pass_derive_password;
 #[cfg(feature = "cbindings")]
-pub use self::cbindings::libreauth_pass_is_valid;
+pub use self::cbindings::boringauth_pass_is_valid;
 
 #[cfg(test)]
 mod tests {
