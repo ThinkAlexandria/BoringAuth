@@ -1,13 +1,13 @@
 [package]
 name = "boringauth"
 version = "0.6.0"
-authors = ["Rodolphe Breard <rodolphe@what.tf>", "YetAnotherMinion <yam@thinkalexandria.com"]
+authors = ["Rodolphe Breard <rodolphe@what.tf>", "YetAnotherMinion <yam@thinkalexandria.com>"]
 description = "Straightforward password, passphrase, TOTP, and HOTP user authentication"
 #documentation = "https://todo.txt"
 repository = "https://github.com/ThinkAlexandria/BoringAuth.git"
 readme = "README.md"
-keywords = ["authentication", "2fa", "otp", "hotp", "totp", "password", "phc", "crypt"]
-license = "CECILL-2.1"
+keywords = ["authentication", "2fa", "otp", "hotp", "totp"]
+license = "GPL-2.0"
 include = ["src/**/*", "Cargo.toml", "LICENSE.txt"]
 
 [lib]
