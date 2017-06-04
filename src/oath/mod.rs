@@ -1,4 +1,27 @@
 /*
+ *  This software is a computer program whose purpose is to compute validitiy of
+ *  identification data.
+ *
+ *  Copyright (C) 2017 Th!nk Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, only version 2.0.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+/* Original LibreAuth License */
+
+/*
  * Copyright Rodolphe Breard (2015)
  * Author: Rodolphe Breard (2015)
  *
@@ -135,13 +158,13 @@ mod c {
         let len = code.len();
         for i in 0..len {
             dest[i] = code[i];
-        };
+        }
         dest[len] = 0;
     }
 
     pub fn get_cfg<T>(cfg: *const T) -> Result<&'static T, ErrorCode> {
         if cfg.is_null() {
-            return Err(ErrorCode::CfgNullPtr)
+            return Err(ErrorCode::CfgNullPtr);
         }
         let cfg: &T = unsafe { &*cfg };
         Ok(cfg)
@@ -149,7 +172,7 @@ mod c {
 
     pub fn get_code(code: *const u8, code_len: usize) -> Result<String, ErrorCode> {
         if code.is_null() {
-            return Err(ErrorCode::CodeNullPtr)
+            return Err(ErrorCode::CodeNullPtr);
         }
         let code = unsafe { std::slice::from_raw_parts(code, code_len).to_owned() };
         match String::from_utf8(code) {
@@ -160,19 +183,21 @@ mod c {
 
     pub fn get_mut_code(code: *mut u8, code_len: usize) -> Result<&'static mut [u8], ErrorCode> {
         if code.is_null() {
-            return Err(ErrorCode::CodeNullPtr)
+            return Err(ErrorCode::CodeNullPtr);
         }
         Ok(unsafe { std::slice::from_raw_parts_mut(code, code_len + 1) })
     }
 
-    pub fn get_output_base(output_base: *const u8, output_base_len: usize) -> Result<Vec<u8>, ErrorCode> {
+    pub fn get_output_base(output_base: *const u8,
+                           output_base_len: usize)
+                           -> Result<Vec<u8>, ErrorCode> {
         match output_base.is_null() {
             false => {
                 match output_base_len {
                     0 | 1 => Err(ErrorCode::InvalidBaseLen),
-                    l => Ok(unsafe { std::slice::from_raw_parts(output_base, l).to_owned() })
+                    l => Ok(unsafe { std::slice::from_raw_parts(output_base, l).to_owned() }),
                 }
-            },
+            }
             true => Ok("0123456789".to_owned().into_bytes()),
         }
     }
@@ -184,7 +209,7 @@ mod c {
                     0 => Err(ErrorCode::InvalidKeyLen),
                     l => Ok(unsafe { std::slice::from_raw_parts(key, l).to_owned() }),
                 }
-            },
+            }
             true => Err(ErrorCode::KeyNullPtr),
         }
     }
@@ -239,11 +264,11 @@ pub use self::hotp::HOTPBuilder;
 #[cfg(feature = "cbindings")]
 pub use self::hotp::cbindings::HOTPcfg;
 #[cfg(feature = "cbindings")]
-pub use self::hotp::cbindings::libreauth_hotp_init;
+pub use self::hotp::cbindings::boringauth_hotp_init;
 #[cfg(feature = "cbindings")]
-pub use self::hotp::cbindings::libreauth_hotp_generate;
+pub use self::hotp::cbindings::boringauth_hotp_generate;
 #[cfg(feature = "cbindings")]
-pub use self::hotp::cbindings::libreauth_hotp_is_valid;
+pub use self::hotp::cbindings::boringauth_hotp_is_valid;
 
 mod totp;
 pub use self::totp::TOTP;
@@ -251,8 +276,8 @@ pub use self::totp::TOTPBuilder;
 #[cfg(feature = "cbindings")]
 pub use self::totp::cbindings::TOTPcfg;
 #[cfg(feature = "cbindings")]
-pub use self::totp::cbindings::libreauth_totp_init;
+pub use self::totp::cbindings::boringauth_totp_init;
 #[cfg(feature = "cbindings")]
-pub use self::totp::cbindings::libreauth_totp_generate;
+pub use self::totp::cbindings::boringauth_totp_generate;
 #[cfg(feature = "cbindings")]
-pub use self::totp::cbindings::libreauth_totp_is_valid;
+pub use self::totp::cbindings::boringauth_totp_is_valid;

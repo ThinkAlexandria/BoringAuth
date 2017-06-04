@@ -34,8 +34,8 @@
 
 
 #include <assert.h>
-#include <libreauth.h>
-#include "libreauth_tests.h"
+#include <boringauth.h>
+#include "boringauth_tests.h"
 
 
 static uint32_t test_valid_pass(void) {
@@ -45,10 +45,10 @@ static uint32_t test_valid_pass(void) {
           invalid_pass[] = "123456";
     uint8_t storage[LIBREAUTH_PASS_STORAGE_LEN];
 
-    uint32_t ret = libreauth_pass_derive_password(password, storage, LIBREAUTH_PASS_STORAGE_LEN);
+    uint32_t ret = boringauth_pass_derive_password(password, storage, LIBREAUTH_PASS_STORAGE_LEN);
     assert(ret == LIBREAUTH_PASS_SUCCESS);
-    assert(libreauth_pass_is_valid(password, storage));
-    assert(!libreauth_pass_is_valid(invalid_pass, storage));
+    assert(boringauth_pass_is_valid(password, storage));
+    assert(!boringauth_pass_is_valid(invalid_pass, storage));
 
     return 1;
 }
@@ -58,7 +58,7 @@ static uint32_t test_invalid_pass(void) {
 
     const char password[] = "invalid password",
           reference[] = "$pbkdf2-sha256$0$45217803$a607a72c2c92357a4568b998c5f708f801f0b1ffbaea205357e08e4d325830c9";
-    assert(!libreauth_pass_is_valid(password, reference));
+    assert(!boringauth_pass_is_valid(password, reference));
 
     return 1;
 }

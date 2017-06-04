@@ -36,8 +36,8 @@
 #include <strings.h>
 #include <string.h>
 #include <assert.h>
-#include <libreauth.h>
-#include "libreauth_tests.h"
+#include <boringauth.h>
+#include "boringauth_tests.h"
 
 #define DEFAULT_BUFF_LEN  6
 
@@ -45,11 +45,11 @@
 static uint32_t test_basic_hotp(void) {
     test_name("hotp: test_basic_hotp");
 
-    struct libreauth_hotp_cfg cfg;
+    struct boringauth_hotp_cfg cfg;
     const char key[] = "12345678901234567890";
     char code[DEFAULT_BUFF_LEN + 1];
 
-    uint32_t ret = libreauth_hotp_init(&cfg);
+    uint32_t ret = boringauth_hotp_init(&cfg);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(cfg.key == NULL);
     assert(cfg.key_len == 0);
@@ -62,18 +62,18 @@ static uint32_t test_basic_hotp(void) {
     cfg.key = key;
     cfg.key_len = sizeof(key);
 
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == DEFAULT_BUFF_LEN);
     assert(strncmp(code, "755224", DEFAULT_BUFF_LEN + 1) == 0);
 
-    assert(libreauth_hotp_is_valid(&cfg, "755224"));
-    assert(!libreauth_hotp_is_valid(NULL, "755224"));
-    assert(!libreauth_hotp_is_valid(&cfg, "755225"));
-    assert(!libreauth_hotp_is_valid(&cfg, "4755224"));
-    assert(!libreauth_hotp_is_valid(&cfg, "!@#$%^"));
-    assert(!libreauth_hotp_is_valid(&cfg, ""));
-    assert(!libreauth_hotp_is_valid(&cfg, NULL));
+    assert(boringauth_hotp_is_valid(&cfg, "755224"));
+    assert(!boringauth_hotp_is_valid(NULL, "755224"));
+    assert(!boringauth_hotp_is_valid(&cfg, "755225"));
+    assert(!boringauth_hotp_is_valid(&cfg, "4755224"));
+    assert(!boringauth_hotp_is_valid(&cfg, "!@#$%^"));
+    assert(!boringauth_hotp_is_valid(&cfg, ""));
+    assert(!boringauth_hotp_is_valid(&cfg, NULL));
 
     return 1;
 }
@@ -81,7 +81,7 @@ static uint32_t test_basic_hotp(void) {
 static uint32_t test_init_null_ptr(void) {
     test_name("hotp: test_init_null_ptr");
 
-    uint32_t ret = libreauth_hotp_init(NULL);
+    uint32_t ret = boringauth_hotp_init(NULL);
     assert(ret == LIBREAUTH_OATH_CFG_NULL_PTR);
 
     return 1;
@@ -90,31 +90,31 @@ static uint32_t test_init_null_ptr(void) {
 static uint32_t test_generate_null_ptr(void) {
     test_name("hotp: test_generate_null_ptr");
 
-    struct libreauth_hotp_cfg cfg;
+    struct boringauth_hotp_cfg cfg;
     const char key[] = "12345678901234567890";
     char code[] = "qwerty";
     uint32_t ret;
 
-    libreauth_hotp_init(&cfg);
+    boringauth_hotp_init(&cfg);
 
-    ret = libreauth_hotp_generate(NULL, code);
+    ret = boringauth_hotp_generate(NULL, code);
     assert(ret == LIBREAUTH_OATH_CFG_NULL_PTR);
     assert(strcmp(code, "qwerty") == 0);
 
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_KEY_NULL_PTR);
 
     cfg.key = key;
 
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_INVALID_KEY_LEN);
 
     cfg.key_len = sizeof(key);
 
-    ret = libreauth_hotp_generate(&cfg, NULL);
+    ret = boringauth_hotp_generate(&cfg, NULL);
     assert(ret == LIBREAUTH_OATH_CODE_NULL_PTR);
 
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
 
     return 1;
@@ -123,25 +123,25 @@ static uint32_t test_generate_null_ptr(void) {
 static uint32_t test_invalid_base(void) {
     test_name("hotp: test_invalid_base");
 
-    struct libreauth_hotp_cfg cfg;
+    struct boringauth_hotp_cfg cfg;
     const char key[] = "12345678901234567890", base[] = "0123456789ABCDEF";
     char code[DEFAULT_BUFF_LEN + 1];
 
-    libreauth_hotp_init(&cfg);
+    boringauth_hotp_init(&cfg);
 
     cfg.key = key;
     cfg.key_len = sizeof(key);
     cfg.output_base = base;
 
-    uint32_t ret = libreauth_hotp_generate(&cfg, code);
+    uint32_t ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_INVALID_BASE_LEN);
     cfg.output_base_len = 1;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_INVALID_BASE_LEN);
 
     cfg.output_base_len = sizeof(base);
 
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
 
     return 1;
@@ -150,14 +150,14 @@ static uint32_t test_invalid_base(void) {
 static uint32_t test_invalid_code(void) {
     test_name("hotp: test_invalid_code");
 
-    struct libreauth_hotp_cfg cfg;
+    struct boringauth_hotp_cfg cfg;
     const char key[] = "12345678901234567890",
           base10[] = "0123456789",
           base32[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
           base64[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/";
     char code[21]; /* Must be strictly superior than the highest code lentgh tested. */
 
-    libreauth_hotp_init(&cfg);
+    boringauth_hotp_init(&cfg);
 
     cfg.key = key;
     cfg.key_len = strlen(key);
@@ -167,25 +167,25 @@ static uint32_t test_invalid_code(void) {
     cfg.output_base_len = strlen(base10);
 
     cfg.output_len = 5;
-    uint32_t ret = libreauth_hotp_generate(&cfg, code);
+    uint32_t ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_SMALL);
 
     cfg.output_len = 6;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == 6);
 
     cfg.output_len = 9;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == 9);
 
     cfg.output_len = 10;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_BIG);
 
     cfg.output_len = 0xffffff;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_BIG);
 
     /* Base 32 */
@@ -193,25 +193,25 @@ static uint32_t test_invalid_code(void) {
     cfg.output_base_len = strlen(base32);
 
     cfg.output_len = 3;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_SMALL);
 
     cfg.output_len = 4;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == 4);
 
     cfg.output_len = 6;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == 6);
 
     cfg.output_len = 7;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_BIG);
 
     cfg.output_len = 0xffffff;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_BIG);
 
     /* Base 64 */
@@ -219,25 +219,25 @@ static uint32_t test_invalid_code(void) {
     cfg.output_base_len = strlen(base64);
 
     cfg.output_len = 3;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_SMALL);
 
     cfg.output_len = 4;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == 4);
 
     cfg.output_len = 5;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_SUCCESS);
     assert(strlen(code) == 5);
 
     cfg.output_len = 6;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_BIG);
 
     cfg.output_len = 0xffffff;
-    ret = libreauth_hotp_generate(&cfg, code);
+    ret = boringauth_hotp_generate(&cfg, code);
     assert(ret == LIBREAUTH_OATH_CODE_TOO_BIG);
 
     return 1;
