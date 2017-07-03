@@ -131,8 +131,7 @@ use std::collections::HashMap;
 
 use rand::{Rng, thread_rng};
 
-use ring;
-use ring::pbkdf2::{HMAC_SHA256, HMAC_SHA512};
+use ring::{self, digest};
 
 #[macro_use]
 mod phc_encoding;
@@ -281,7 +280,7 @@ fn from_reference_hash(hash_info: &PHCEncoded)
             Ok(Box::new(move |password: &str| {
                 let mut out: Vec<u8> = vec![0; output_len];
 
-                ring::pbkdf2::derive(&HMAC_SHA256,
+                ring::pbkdf2::derive(&digest::SHA256,
                                      iterations,
                                      &salt[..],
                                      password.as_bytes(),
@@ -311,7 +310,7 @@ fn from_reference_hash(hash_info: &PHCEncoded)
             Ok(Box::new(move |password: &str| {
                 let mut out: Vec<u8> = vec![0; output_len];
 
-                ring::pbkdf2::derive(&HMAC_SHA512,
+                ring::pbkdf2::derive(&digest::SHA512,
                                      iterations,
                                      &salt[..],
                                      password.as_bytes(),
@@ -396,23 +395,23 @@ pub fn is_valid(password: &str, reference: &str) -> bool {
         Ok(x) => x,
         Err(_) => return false,
     };
-    use ring::pbkdf2::{PRF, HMAC_SHA256, HMAC_SHA512};
+    use ring::digest;
 
-    let algorithm: &'static PRF = match hash_info.id {
+    let algorithm: &'static digest::Algorithm= match hash_info.id {
         Some(ref scheme_id) => {
             match scheme_id.as_ref() {
-                "pbkdf2_sha512" => &HMAC_SHA512,
-                "pbkdf2_sha256" => &HMAC_SHA256,
+                "pbkdf2_sha512" => &digest::SHA512,
+                "pbkdf2_sha256" => &digest::SHA256,
                 "pbkdf2" => {
                     match hash_info.parameters.get("h") {
                         Some(h) => {
                             match h.as_ref() {
-                                "sha512" => &HMAC_SHA512,
-                                "sha256" => &HMAC_SHA256,
+                                "sha512" => &digest::SHA512,
+                                "sha256" => &digest::SHA256,
                                 _ => return false,
                             }
                         }
-                        None => &HMAC_SHA512,
+                        None => &digest::SHA512,
                     }
                 }
                 _ => return false,
