@@ -1,10 +1,10 @@
 # BoringAuth
 
 [![Build Status](https://api.travis-ci.org/ThinkAlexandria/boringauth.svg?branch=master)](https://travis-ci.org/breard-r/boringauth)
-[![LibreAuth on crates.io](https://img.shields.io/crates/v/boringauth.svg)](https://crates.io/crates/boringauth)
+[![BoringAuth on crates.io](https://img.shields.io/crates/v/boringauth.svg)](https://crates.io/crates/boringauth)
 
 BoringAuth is a collection of tools for user authentication. BoringAuth is a fork
-of [LibreAuth](https://github.com/breard-r/boringauth) that chooses to use the
+of [LibreAuth](https://github.com/breard-r/libreauth) that chooses to use the
 actively developed **ring** crypto crate over the dead **rust-crypto** crate for
 its crypto primitives.
 
