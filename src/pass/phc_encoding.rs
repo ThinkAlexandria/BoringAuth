@@ -61,17 +61,6 @@ use super::ErrorCode;
 use std::collections::HashMap;
 use parser;
 
-/*
-macro_rules! get_salt {
-    ($salt:expr) => {{
-        match $salt.to_owned() {
-            Some(s) => s,
-            None => generate_salt(8),
-        }
-    }}
-}
-*/
-
 macro_rules! get_param {
     ($h:expr, $k:expr, $t:ty, $default:expr) => {{
         if $h.contains_key($k) {
