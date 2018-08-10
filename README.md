@@ -9,6 +9,12 @@ actively developed **ring** crypto crate over the dead **rust-crypto** crate for
 its crypto primitives.
 
 
+Ring compatibility chart.
+| BoringAuth | Ring |
+| ------ | ------ |
+| v0.6.4 | 0.12 |
+| v0.7.0 | 0.13 |
+
 ## Features
 
 - Password / passphrase authentication
