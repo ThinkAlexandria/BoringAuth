@@ -56,38 +56,11 @@
  */
 
 
-use nom::{IResult,be_u8,is_hex_digit};
-
-fn hex_ascii_to_val(c: u8) -> u8 {
-    match c {
-        b'0'...b'9' => c - b'0',
-        b'a'...b'f' => c - b'a' + 10,
-        b'A'...b'F' => c - b'A' + 10,
-        _ => 0,
-    }
-}
-
-named!(get_hex_char<u8>, verify!(be_u8, is_hex_digit));
-
-named!(get_hex_couple<Vec<u8>>, count!(get_hex_char, 2));
-
-named!(parse_hex_couple<u8>, map!(get_hex_couple, |v: Vec<u8>| hex_ascii_to_val(v[0]) * 16 + hex_ascii_to_val(v[1])));
-
-named!(parse_hex_str<Vec<u8>>, fold_many0!(parse_hex_couple, Vec::new(), |mut acc: Vec<_>, item| {
-     acc.push(item);
-     acc
-}));
+use hex;
 
 pub fn from_hex(s: &String) -> Result<Vec<u8>, ()> {
-    match parse_hex_str(s.as_str().as_bytes()) {
-        IResult::Done(r, i) => {
-            match r.len() {
-                0 => Ok(i.to_vec()),
-                _ => Err(()),
-            }
-        },
-        _ => Err(()),
-    }
+    hex::decode(s)
+        .map_err(|_| ())
 }
 
 #[cfg(test)]

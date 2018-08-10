@@ -84,8 +84,7 @@ extern crate base32;
 extern crate ring;
 extern crate rand;
 extern crate time;
-#[macro_use]
-extern crate nom;
+extern crate hex;
 
 pub mod oath;
 pub mod pass;

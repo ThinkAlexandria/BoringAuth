@@ -61,6 +61,7 @@ use super::ErrorCode;
 use std::collections::HashMap;
 use parser;
 
+/*
 macro_rules! get_salt {
     ($salt:expr) => {{
         match $salt.to_owned() {
@@ -69,6 +70,7 @@ macro_rules! get_salt {
         }
     }}
 }
+*/
 
 macro_rules! get_param {
     ($h:expr, $k:expr, $t:ty, $default:expr) => {{

@@ -129,7 +129,7 @@
 
 use std::collections::HashMap;
 
-use rand::{Rng, thread_rng};
+use rand::{RngCore, thread_rng};
 
 use ring::{self, digest};
 
