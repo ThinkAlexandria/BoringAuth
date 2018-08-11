@@ -10,6 +10,7 @@ its crypto primitives.
 
 
 Ring compatibility chart.
+
 | BoringAuth | Ring |
 | ------ | ------ |
 | v0.6.4 | 0.12 |
