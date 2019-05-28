@@ -55,7 +55,6 @@
  * knowledge of the CeCILL license and that you accept its terms.
  */
 
-
 //!
 //! [![Build Status](https://api.travis-ci.org/breard-r/boringauth.svg?branch=master)](https://travis-ci.org/breard-r/boringauth)
 //! [![LibreAuth on crates.io](https://img.shields.io/crates/v/boringauth.svg)](https://crates.io/crates/boringauth)
@@ -81,14 +80,14 @@
 //!
 
 extern crate base32;
-extern crate ring;
-extern crate rand;
-extern crate time;
 extern crate hex;
+extern crate rand;
+extern crate ring;
+extern crate time;
 
 pub mod oath;
-pub mod pass;
 mod parser;
+pub mod pass;
 
 #[cfg(feature = "cbindings")]
 extern crate libc;

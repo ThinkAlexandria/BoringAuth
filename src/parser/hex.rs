@@ -55,12 +55,10 @@
  * knowledge of the CeCILL license and that you accept its terms.
  */
 
-
 use hex;
 
 pub fn from_hex(s: &String) -> Result<Vec<u8>, ()> {
-    hex::decode(s)
-        .map_err(|_| ())
+    hex::decode(s).map_err(|_| ())
 }
 
 #[cfg(test)]
@@ -70,7 +68,12 @@ mod tests {
     #[test]
     fn test_valid_data() {
         let examples: [(&str, Vec<u8>); 4] = [
-            ("576f6c6f6c6f203432202121203e2e3c", vec![87, 111, 108, 111, 108, 111, 32, 52, 50, 32, 33, 33, 32, 62, 46, 60]),
+            (
+                "576f6c6f6c6f203432202121203e2e3c",
+                vec![
+                    87, 111, 108, 111, 108, 111, 32, 52, 50, 32, 33, 33, 32, 62, 46, 60,
+                ],
+            ),
             ("420069", vec![66, 0, 105]),
             ("0000000000", vec![0, 0, 0, 0, 0]),
             ("Ecc25519", vec![236, 194, 85, 25]),

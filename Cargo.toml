@@ -1,6 +1,6 @@
 [package]
 name = "boringauth"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Rodolphe Breard <rodolphe@what.tf>", "YetAnotherMinion <yam@thinkalexandria.com>"]
 description = "Straightforward password, passphrase, TOTP, and HOTP user authentication"
 documentation = "https://docs.rs/boringauth"
@@ -18,10 +18,10 @@ crate-type = ["rlib", "dylib"]
 cbindings = ["libc"]
 
 [dependencies]
-ring = "0.13"
-base32 = "^0.3.0"
-time = "^0.1.31"
-rand = "0.5.0"
+ring = "0.14"
+base32 = "^0.4.0"
+time = "0.1.42"
+rand = "0.6.0"
 hex = "0.3.2"
 
 [dependencies.libc]

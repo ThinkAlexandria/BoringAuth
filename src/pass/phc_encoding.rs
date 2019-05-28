@@ -55,11 +55,9 @@
  * knowledge of the CeCILL license and that you accept its terms.
  */
 
-
-
 use super::ErrorCode;
-use std::collections::HashMap;
 use parser;
+use std::collections::HashMap;
 
 macro_rules! get_param {
     ($h:expr, $k:expr, $t:ty, $default:expr) => {{
@@ -68,7 +66,7 @@ macro_rules! get_param {
         } else {
             $default
         }
-    }}
+    }};
 }
 
 use std::fmt;
@@ -210,12 +208,10 @@ impl PHCEncoded {
         }
 
         match self.salt {
-            Some(ref encoded_salt) => {
-                match parser::from_hex(encoded_salt) {
-                    Ok(raw_salt) => Ok(raw_salt),
-                    Err(_) => Err(ErrorCode::InvalidPasswordFormat),
-                }
-            }
+            Some(ref encoded_salt) => match parser::from_hex(encoded_salt) {
+                Ok(raw_salt) => Ok(raw_salt),
+                Err(_) => Err(ErrorCode::InvalidPasswordFormat),
+            },
             None => Err(ErrorCode::InvalidPasswordFormat),
         }
     }
@@ -228,12 +224,10 @@ impl PHCEncoded {
         }
 
         match self.hash {
-            Some(ref encoded_hash) => {
-                match parser::from_hex(encoded_hash) {
-                    Ok(raw_hash) => Ok(raw_hash),
-                    Err(_) => Err(ErrorCode::InvalidPasswordFormat),
-                }
-            }
+            Some(ref encoded_hash) => match parser::from_hex(encoded_hash) {
+                Ok(raw_hash) => Ok(raw_hash),
+                Err(_) => Err(ErrorCode::InvalidPasswordFormat),
+            },
             None => Err(ErrorCode::InvalidPasswordFormat),
         }
     }

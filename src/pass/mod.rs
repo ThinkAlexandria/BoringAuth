@@ -55,7 +55,6 @@
  * knowledge of the CeCILL license and that you accept its terms.
  */
 
-
 //! Password authentication module.
 //!
 //! It allows you to:
@@ -127,11 +126,10 @@
 //! [1]: https://en.wikipedia.org/wiki/Crypt_(C)#Key_Derivation_Functions_Supported_by_crypt
 //! [2]: https://pythonhosted.org/passlib/modular_crypt_format.html
 
-use std::collections::HashMap;
-
-use rand::{RngCore, thread_rng};
-
+use rand::{thread_rng, RngCore};
 use ring::{self, digest};
+use std::collections::HashMap;
+use std::num::NonZeroU32;
 
 #[macro_use]
 mod phc_encoding;
@@ -157,7 +155,6 @@ pub const PASSWORD_MIN_LEN: usize = 4;
 /// ## C interface
 /// The C interface refers at this constant as `LIBREAUTH_PASS_PASSWORD_MAX_LEN`.
 pub const PASSWORD_MAX_LEN: usize = 128;
-
 
 /// Error codes used both in the rust and C interfaces.
 ///
@@ -225,7 +222,6 @@ pub enum ErrorCode {
     NotEnoughSpace = 20,
 }
 
-
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum HashFunction {
@@ -240,51 +236,55 @@ fn generate_salt(nb_bytes: usize) -> Vec<u8> {
     salt
 }
 
-
 enum SupportedHashSchemes {
     Pbkdf2Sha256,
     Pbkdf2Sha512,
 }
 
-fn from_reference_hash(hash_info: &PHCEncoded)
-                       -> Result<Box<Fn(&str) -> Result<String, ErrorCode>>, ErrorCode> {
+fn from_reference_hash(
+    hash_info: &PHCEncoded,
+) -> Result<Box<Fn(&str) -> Result<String, ErrorCode>>, ErrorCode> {
     let algorithm: SupportedHashSchemes = match hash_info.id {
-        Some(ref scheme_id) => {
-            match scheme_id.as_ref() {
-                "pbkdf2_sha512" => SupportedHashSchemes::Pbkdf2Sha512,
-                "pbkdf2_sha256" => SupportedHashSchemes::Pbkdf2Sha256,
-                "pbkdf2" => {
-                    match hash_info.parameters.get("h") {
-                        Some(h) => {
-                            match h.as_ref() {
-                                "sha512" => SupportedHashSchemes::Pbkdf2Sha512,
-                                "sha256" => SupportedHashSchemes::Pbkdf2Sha256,
-                                _ => return Err(ErrorCode::InvalidPasswordFormat),
-                            }
-                        }
-                        None => SupportedHashSchemes::Pbkdf2Sha512,
-                    }
-                }
-                _ => return Err(ErrorCode::InvalidPasswordFormat),
-            }
-        }
+        Some(ref scheme_id) => match scheme_id.as_ref() {
+            "pbkdf2_sha512" => SupportedHashSchemes::Pbkdf2Sha512,
+            "pbkdf2_sha256" => SupportedHashSchemes::Pbkdf2Sha256,
+            "pbkdf2" => match hash_info.parameters.get("h") {
+                Some(h) => match h.as_ref() {
+                    "sha512" => SupportedHashSchemes::Pbkdf2Sha512,
+                    "sha256" => SupportedHashSchemes::Pbkdf2Sha256,
+                    _ => return Err(ErrorCode::InvalidPasswordFormat),
+                },
+                None => SupportedHashSchemes::Pbkdf2Sha512,
+            },
+            _ => return Err(ErrorCode::InvalidPasswordFormat),
+        },
         None => return Err(ErrorCode::InvalidPasswordFormat),
     };
 
     match algorithm {
         SupportedHashSchemes::Pbkdf2Sha256 => {
-            let iterations: u32 = get_param!(hash_info.parameters, "i", u32, 21000);
+            let iterations: NonZeroU32 = {
+                const DEFAULT_ITERATIONS: u32 = 21000;
+                let iterations = get_param!(hash_info.parameters, "i", u32, DEFAULT_ITERATIONS);
+                if iterations == 0 {
+                    NonZeroU32::new(DEFAULT_ITERATIONS).unwrap()
+                } else {
+                    NonZeroU32::new(iterations).unwrap()
+                }
+            };
             // the output length will depend on the digest algorithm
             let output_len: usize = ring::digest::SHA256.output_len;
             let salt: Vec<u8> = hash_info.salt().unwrap_or(Vec::new());
             Ok(Box::new(move |password: &str| {
                 let mut out: Vec<u8> = vec![0; output_len];
 
-                ring::pbkdf2::derive(&digest::SHA256,
-                                     iterations,
-                                     &salt[..],
-                                     password.as_bytes(),
-                                     &mut out[..]);
+                ring::pbkdf2::derive(
+                    &digest::SHA256,
+                    iterations,
+                    &salt[..],
+                    password.as_bytes(),
+                    &mut out[..],
+                );
 
                 let encoded_salt = to_hex(salt.clone());
                 let encoded_hash = to_hex(out);
@@ -303,18 +303,28 @@ fn from_reference_hash(hash_info: &PHCEncoded)
             }))
         }
         SupportedHashSchemes::Pbkdf2Sha512 => {
-            let iterations: u32 = get_param!(hash_info.parameters, "i", u32, 21000);
+            let iterations: NonZeroU32 = {
+                const DEFAULT_ITERATIONS: u32 = 21000;
+                let iterations = get_param!(hash_info.parameters, "i", u32, DEFAULT_ITERATIONS);
+                if iterations == 0 {
+                    NonZeroU32::new(DEFAULT_ITERATIONS).unwrap()
+                } else {
+                    NonZeroU32::new(iterations).unwrap()
+                }
+            };
             let output_len: usize = ring::digest::SHA512.output_len;
             // the output length will depend on
             let salt: Vec<u8> = hash_info.salt().unwrap_or(Vec::new());
             Ok(Box::new(move |password: &str| {
                 let mut out: Vec<u8> = vec![0; output_len];
 
-                ring::pbkdf2::derive(&digest::SHA512,
-                                     iterations,
-                                     &salt[..],
-                                     password.as_bytes(),
-                                     &mut out[..]);
+                ring::pbkdf2::derive(
+                    &digest::SHA512,
+                    iterations,
+                    &salt[..],
+                    password.as_bytes(),
+                    &mut out[..],
+                );
 
                 let encoded_salt = to_hex(salt.clone());
                 let encoded_hash = to_hex(out);
@@ -333,7 +343,6 @@ fn from_reference_hash(hash_info: &PHCEncoded)
         }
     }
 }
-
 
 /// Derivate a password so it can be stored.
 ///
@@ -374,7 +383,6 @@ pub fn derive_password(password: &str) -> Result<String, ErrorCode> {
     derive(password)
 }
 
-
 /// Check whether or not the password is valid.
 ///
 /// ## Examples
@@ -395,32 +403,32 @@ pub fn is_valid(password: &str, reference: &str) -> bool {
         Ok(x) => x,
         Err(_) => return false,
     };
-    use ring::digest;
-
-    let algorithm: &'static digest::Algorithm= match hash_info.id {
-        Some(ref scheme_id) => {
-            match scheme_id.as_ref() {
-                "pbkdf2_sha512" => &digest::SHA512,
-                "pbkdf2_sha256" => &digest::SHA256,
-                "pbkdf2" => {
-                    match hash_info.parameters.get("h") {
-                        Some(h) => {
-                            match h.as_ref() {
-                                "sha512" => &digest::SHA512,
-                                "sha256" => &digest::SHA256,
-                                _ => return false,
-                            }
-                        }
-                        None => &digest::SHA512,
-                    }
-                }
-                _ => return false,
-            }
-        }
+    let algorithm: &'static digest::Algorithm = match hash_info.id {
+        Some(ref scheme_id) => match scheme_id.as_ref() {
+            "pbkdf2_sha512" => &digest::SHA512,
+            "pbkdf2_sha256" => &digest::SHA256,
+            "pbkdf2" => match hash_info.parameters.get("h") {
+                Some(h) => match h.as_ref() {
+                    "sha512" => &digest::SHA512,
+                    "sha256" => &digest::SHA256,
+                    _ => return false,
+                },
+                None => &digest::SHA512,
+            },
+            _ => return false,
+        },
         None => return false,
     };
 
-    let iterations: u32 = get_param!(hash_info.parameters, "i", u32, 21000);
+    let iterations: NonZeroU32 = {
+        const DEFAULT_ITERATIONS: u32 = 21000;
+        let iterations = get_param!(hash_info.parameters, "i", u32, DEFAULT_ITERATIONS);
+        if iterations == 0 {
+            NonZeroU32::new(DEFAULT_ITERATIONS).unwrap()
+        } else {
+            NonZeroU32::new(iterations).unwrap()
+        }
+    };
     let salt: Vec<u8> = match hash_info.salt() {
         Ok(salt) => salt,
         Err(_) => Vec::new(),
@@ -430,11 +438,13 @@ pub fn is_valid(password: &str, reference: &str) -> bool {
         Err(_) => return false,
     };
 
-    match ring::pbkdf2::verify(algorithm,
-                               iterations,
-                               salt.as_ref(),
-                               password.as_bytes(),
-                               password_hash.as_ref()) {
+    match ring::pbkdf2::verify(
+        algorithm,
+        iterations,
+        salt.as_ref(),
+        password.as_bytes(),
+        password_hash.as_ref(),
+    ) {
         Ok(_) => true,
         Err(_) => false,
     }
@@ -442,7 +452,7 @@ pub fn is_valid(password: &str, reference: &str) -> bool {
 
 #[cfg(feature = "cbindings")]
 mod cbindings {
-    use super::{ErrorCode, derive_password, is_valid};
+    use super::{derive_password, is_valid, ErrorCode};
     use libc;
     use std;
 
@@ -461,10 +471,11 @@ mod cbindings {
     /// }
     /// ```
     #[no_mangle]
-    pub extern "C" fn boringauth_pass_derive_password(password: *const libc::c_char,
-                                                     storage: *mut libc::uint8_t,
-                                                     storage_len: libc::size_t)
-                                                     -> ErrorCode {
+    pub extern "C" fn boringauth_pass_derive_password(
+        password: *const libc::c_char,
+        storage: *mut libc::uint8_t,
+        storage_len: libc::size_t,
+    ) -> ErrorCode {
         let mut r_storage = unsafe {
             assert!(!storage.is_null());
             std::slice::from_raw_parts_mut(storage, storage_len as usize)
@@ -504,9 +515,10 @@ mod cbindings {
     /// assert(!boringauth_pass_is_valid(invalid_pass, storage));
     /// ```
     #[no_mangle]
-    pub extern "C" fn boringauth_pass_is_valid(password: *const libc::c_char,
-                                              reference: *const libc::c_char)
-                                              -> libc::int32_t {
+    pub extern "C" fn boringauth_pass_is_valid(
+        password: *const libc::c_char,
+        reference: *const libc::c_char,
+    ) -> libc::int32_t {
         let c_password = unsafe {
             assert!(!password.is_null());
             std::ffi::CStr::from_ptr(password)
@@ -528,9 +540,8 @@ pub use self::cbindings::boringauth_pass_is_valid;
 
 #[cfg(test)]
 mod tests {
-    use super::{derive_password, is_valid, from_reference_hash};
     use super::phc_encoding::PHCEncoded;
-
+    use super::{derive_password, from_reference_hash, is_valid};
 
     #[test]
     fn test_default_derivation() {
@@ -573,13 +584,15 @@ mod tests {
 
     #[test]
     fn test_utf8_passwords() {
-        let password_list = ["è_é ÖÀ",
-                             "пароль",
-                             "密码",
-                             "密碼",
-                             "كلمه السر",
-                             "ль\n\n\n密à\r\n$",
-                             "😁😊😣😺✅✨❕➡🚀🚧Ⓜ🇪🇸⏳🌎"];
+        let password_list = [
+            "è_é ÖÀ",
+            "пароль",
+            "密码",
+            "密碼",
+            "كلمه السر",
+            "ль\n\n\n密à\r\n$",
+            "😁😊😣😺✅✨❕➡🚀🚧Ⓜ🇪🇸⏳🌎",
+        ];
         for password in password_list.iter() {
             let stored_password = derive_password(password).unwrap();
             assert!(!is_valid("bad password", &stored_password));
@@ -589,9 +602,11 @@ mod tests {
 
     #[test]
     fn test_password_with_null_byte() {
-        let password_list = [// (password, invalid_password),
-                             ("123456\x00789", "123456"),
-                             ("a\x00cd", "a")];
+        let password_list = [
+            // (password, invalid_password),
+            ("123456\x00789", "123456"),
+            ("a\x00cd", "a"),
+        ];
         for pass in password_list.iter() {
             let stored_password = derive_password(pass.0).unwrap();
             assert!(!is_valid(pass.1, &stored_password));
@@ -637,10 +652,20 @@ mod tests {
 
     #[test]
     fn test_format_without_salt() {
-        let list = [// (password, storage, expected_output_start),
-                    ("password123", "$pbkdf2$i=1000,h=sha256", "$pbkdf2_sha256$i=1000$"),
-                    ("password123", "$pbkdf2$i=1000,h=sha512", "$pbkdf2_sha512$i=1000$"),
-                    ("password123", "$pbkdf2_sha512", "$pbkdf2_sha512$i=21000$")];
+        let list = [
+            // (password, storage, expected_output_start),
+            (
+                "password123",
+                "$pbkdf2$i=1000,h=sha256",
+                "$pbkdf2_sha256$i=1000$",
+            ),
+            (
+                "password123",
+                "$pbkdf2$i=1000,h=sha512",
+                "$pbkdf2_sha512$i=1000$",
+            ),
+            ("password123", "$pbkdf2_sha512", "$pbkdf2_sha512$i=21000$"),
+        ];
         for p in list.iter() {
             let derive = match from_reference_hash(&PHCEncoded::from_string(p.1).unwrap()) {
                 Ok(boxed_func) => boxed_func,
@@ -730,8 +755,10 @@ mod tests {
             println!("{}", hash);
             println!("{}", p.1);
 
-            assert_eq!(p.1.split("$").collect::<Vec<&str>>().last().unwrap(),
-                       hash.split("$").collect::<Vec<&str>>().last().unwrap());
+            assert_eq!(
+                p.1.split("$").collect::<Vec<&str>>().last().unwrap(),
+                hash.split("$").collect::<Vec<&str>>().last().unwrap()
+            );
             assert!(!is_valid("bad password", p.1));
             assert!(is_valid(p.0, p.1));
         }

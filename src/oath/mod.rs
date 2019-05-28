@@ -55,7 +55,6 @@
  * knowledge of the CeCILL license and that you accept its terms.
  */
 
-
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum HashFunction {
@@ -83,7 +82,6 @@ pub enum ErrorCode {
 
     CodeInvalidUTF8 = 30,
 }
-
 
 macro_rules! builder_common {
     ($t:ty) => {
@@ -188,28 +186,25 @@ mod c {
         Ok(unsafe { std::slice::from_raw_parts_mut(code, code_len + 1) })
     }
 
-    pub fn get_output_base(output_base: *const u8,
-                           output_base_len: usize)
-                           -> Result<Vec<u8>, ErrorCode> {
+    pub fn get_output_base(
+        output_base: *const u8,
+        output_base_len: usize,
+    ) -> Result<Vec<u8>, ErrorCode> {
         match output_base.is_null() {
-            false => {
-                match output_base_len {
-                    0 | 1 => Err(ErrorCode::InvalidBaseLen),
-                    l => Ok(unsafe { std::slice::from_raw_parts(output_base, l).to_owned() }),
-                }
-            }
+            false => match output_base_len {
+                0 | 1 => Err(ErrorCode::InvalidBaseLen),
+                l => Ok(unsafe { std::slice::from_raw_parts(output_base, l).to_owned() }),
+            },
             true => Ok("0123456789".to_owned().into_bytes()),
         }
     }
 
     pub fn get_key(key: *const u8, key_len: usize) -> Result<Vec<u8>, ErrorCode> {
         match key.is_null() {
-            false => {
-                match key_len {
-                    0 => Err(ErrorCode::InvalidKeyLen),
-                    l => Ok(unsafe { std::slice::from_raw_parts(key, l).to_owned() }),
-                }
-            }
+            false => match key_len {
+                0 => Err(ErrorCode::InvalidKeyLen),
+                l => Ok(unsafe { std::slice::from_raw_parts(key, l).to_owned() }),
+            },
             true => Err(ErrorCode::KeyNullPtr),
         }
     }
@@ -244,7 +239,7 @@ macro_rules! get_value_or_errno {
             Ok(v) => v,
             Err(errno) => return errno,
         }
-    }}
+    }};
 }
 
 #[cfg(feature = "cbindings")]
@@ -254,30 +249,29 @@ macro_rules! get_value_or_false {
             Ok(v) => v,
             Err(_) => return 0,
         }
-    }}
+    }};
 }
 
-
 mod hotp;
-pub use self::hotp::HOTP;
-pub use self::hotp::HOTPBuilder;
-#[cfg(feature = "cbindings")]
-pub use self::hotp::cbindings::HOTPcfg;
-#[cfg(feature = "cbindings")]
-pub use self::hotp::cbindings::boringauth_hotp_init;
 #[cfg(feature = "cbindings")]
 pub use self::hotp::cbindings::boringauth_hotp_generate;
 #[cfg(feature = "cbindings")]
+pub use self::hotp::cbindings::boringauth_hotp_init;
+#[cfg(feature = "cbindings")]
 pub use self::hotp::cbindings::boringauth_hotp_is_valid;
+#[cfg(feature = "cbindings")]
+pub use self::hotp::cbindings::HOTPcfg;
+pub use self::hotp::HOTPBuilder;
+pub use self::hotp::HOTP;
 
 mod totp;
-pub use self::totp::TOTP;
-pub use self::totp::TOTPBuilder;
-#[cfg(feature = "cbindings")]
-pub use self::totp::cbindings::TOTPcfg;
-#[cfg(feature = "cbindings")]
-pub use self::totp::cbindings::boringauth_totp_init;
 #[cfg(feature = "cbindings")]
 pub use self::totp::cbindings::boringauth_totp_generate;
 #[cfg(feature = "cbindings")]
+pub use self::totp::cbindings::boringauth_totp_init;
+#[cfg(feature = "cbindings")]
 pub use self::totp::cbindings::boringauth_totp_is_valid;
+#[cfg(feature = "cbindings")]
+pub use self::totp::cbindings::TOTPcfg;
+pub use self::totp::TOTPBuilder;
+pub use self::totp::TOTP;
