@@ -243,7 +243,7 @@ enum SupportedHashSchemes {
 
 fn from_reference_hash(
     hash_info: &PHCEncoded,
-) -> Result<Box<Fn(&str) -> Result<String, ErrorCode>>, ErrorCode> {
+) -> Result<Box<dyn Fn(&str) -> Result<String, ErrorCode>>, ErrorCode> {
     let algorithm: SupportedHashSchemes = match hash_info.id {
         Some(ref scheme_id) => match scheme_id.as_ref() {
             "pbkdf2_sha512" => SupportedHashSchemes::Pbkdf2Sha512,
