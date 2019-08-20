@@ -86,19 +86,18 @@ pub enum ErrorCode {
 macro_rules! builder_common {
     ($t:ty) => {
         /// Sets the shared secret.
-        pub fn key(&mut self, key: &Vec<u8>) -> &mut $t {
-            self.key = Some(key.clone());
+        pub fn key(&mut self, key: &[u8]) -> &mut $t {
+            self.key = Some(key.to_owned());
             self
         }
 
         /// Sets the shared secret. This secret is passed as an ASCII string.
-        pub fn ascii_key(&mut self, key: &String) -> &mut $t {
-            self.key = Some(key.clone().into_bytes());
-            self
+        pub fn ascii_key(&mut self, key: &str) -> &mut $t {
+            self.key(key.as_bytes())
         }
 
         /// Sets the shared secret. This secret is passed as an hexadecimal encoded string.
-        pub fn hex_key(&mut self, key: &String) -> &mut $t {
+        pub fn hex_key(&mut self, key: &str) -> &mut $t {
             match parser::from_hex(key) {
                 Ok(k) => { self.key = Some(k); }
                 Err(_) => { self.runtime_error = Some(ErrorCode::InvalidKey); }
@@ -107,7 +106,7 @@ macro_rules! builder_common {
         }
 
         /// Sets the shared secret. This secret is passed as a base32 encoded string.
-        pub fn base32_key(&mut self, key: &String) -> &mut $t {
+        pub fn base32_key(&mut self, key: &str) -> &mut $t {
             match base32::decode(base32::Alphabet::RFC4648 { padding: false }, &key) {
                 Some(k) => { self.key = Some(k); }
                 None => { self.runtime_error = Some(ErrorCode::InvalidKey); }
@@ -134,8 +133,8 @@ macro_rules! builder_common {
         }
 
         /// Sets the base used to represents the output code. Default is "0123456789".to_owned().into_bytes().
-        pub fn output_base(&mut self, base: &Vec<u8>) -> &mut $t {
-            self.output_base = base.clone();
+        pub fn output_base(&mut self, base: &[u8]) -> &mut $t {
+            self.output_base = base.to_owned();
             self
         }
 

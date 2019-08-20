@@ -243,7 +243,7 @@ enum SupportedHashSchemes {
 
 fn from_reference_hash(
     hash_info: &PHCEncoded,
-) -> Result<Box<Fn(&str) -> Result<String, ErrorCode>>, ErrorCode> {
+) -> Result<Box<dyn Fn(&str) -> Result<String, ErrorCode>>, ErrorCode> {
     let algorithm: SupportedHashSchemes = match hash_info.id {
         Some(ref scheme_id) => match scheme_id.as_ref() {
             "pbkdf2_sha512" => SupportedHashSchemes::Pbkdf2Sha512,
@@ -274,7 +274,7 @@ fn from_reference_hash(
             };
             // the output length will depend on the digest algorithm
             let output_len: usize = ring::digest::SHA256.output_len;
-            let salt: Vec<u8> = hash_info.salt().unwrap_or(Vec::new());
+            let salt: Vec<u8> = hash_info.salt().unwrap_or_default();
             Ok(Box::new(move |password: &str| {
                 let mut out: Vec<u8> = vec![0; output_len];
 
@@ -314,7 +314,7 @@ fn from_reference_hash(
             };
             let output_len: usize = ring::digest::SHA512.output_len;
             // the output length will depend on
-            let salt: Vec<u8> = hash_info.salt().unwrap_or(Vec::new());
+            let salt: Vec<u8> = hash_info.salt().unwrap_or_default();
             Ok(Box::new(move |password: &str| {
                 let mut out: Vec<u8> = vec![0; output_len];
 
@@ -438,16 +438,13 @@ pub fn is_valid(password: &str, reference: &str) -> bool {
         Err(_) => return false,
     };
 
-    match ring::pbkdf2::verify(
+    ring::pbkdf2::verify(
         algorithm,
         iterations,
         salt.as_ref(),
         password.as_bytes(),
         password_hash.as_ref(),
-    ) {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    ).is_ok()
 }
 
 #[cfg(feature = "cbindings")]
