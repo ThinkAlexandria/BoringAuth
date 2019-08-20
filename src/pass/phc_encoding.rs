@@ -94,7 +94,7 @@ impl fmt::Display for PHCEncoded {
 
         write!(f, "${}", scheme_id)?;
         // parameters are optional
-        if self.parameters_order.len() > 0 {
+        if !self.parameters_order.is_empty() {
             write!(f, "$")?;
 
             let mut parameters = self.parameters_order.iter();
@@ -102,7 +102,7 @@ impl fmt::Display for PHCEncoded {
             if let Some(&(ref param, ref value)) = parameters.next() {
                 write!(f, "{}={}", param, value)?;
 
-                while let Some(&(ref p, ref v)) = parameters.next() {
+                for (p, v) in parameters {
                     write!(f, ",{}={}", p, v)?;
                 }
             }
@@ -124,7 +124,7 @@ impl fmt::Display for PHCEncoded {
 }
 
 impl PHCEncoded {
-    pub fn insert(&mut self, k: String, v: String) -> () {
+    pub fn insert(&mut self, k: String, v: String) {
         self.parameters.insert(k.clone(), v.clone());
         self.parameters_order.push((k, v));
     }
@@ -138,7 +138,7 @@ impl PHCEncoded {
             hash: None,
         };
 
-        let mut parts: Vec<&str> = pch_formatted.split("$").collect();
+        let mut parts: Vec<&str> = pch_formatted.split('$').collect();
         if parts.len() < 2 || parts.len() > 5 {
             return Err(ErrorCode::InvalidPasswordFormat);
         }
@@ -155,8 +155,8 @@ impl PHCEncoded {
 
         // Now look for an optional list of parameter value pairs
         // aka: [$<param>=<value>(,<param>=<value>)*]
-        if segment.contains("=") {
-            let params: Vec<&str> = segment.split(",").collect();
+        if segment.contains('=') {
+            let params: Vec<&str> = segment.split(',').collect();
             for item in params.iter() {
                 // the value for each parameter may only contain the characters [a-zA-Z0-9/+.-]
                 // (lowercase letters, uppercase letters, digits, /, +, . and -)
@@ -173,7 +173,7 @@ impl PHCEncoded {
                 Some(some) => some,
                 None => return Ok(encoded),
             };
-        } else if segment.len() == 0 {
+        } else if segment.is_empty() {
             // The parameters section may also be empty
             segment = match parts.pop() {
                 Some(some) => some,
@@ -197,13 +197,13 @@ impl PHCEncoded {
             None => return Ok(encoded),
         };
 
-        return Ok(encoded);
+        Ok(encoded)
     }
 
     pub fn salt(&self) -> Result<Vec<u8>, ErrorCode> {
         // without knowing the scheme id of the hash we cannot hope to decode
         // the salt string
-        if let None = self.id {
+        if self.id.is_none() {
             return Err(ErrorCode::InvalidPasswordFormat);
         }
 
@@ -219,7 +219,7 @@ impl PHCEncoded {
     pub fn hash(&self) -> Result<Vec<u8>, ErrorCode> {
         // without knowing the scheme id of the hash we cannot hope to decode
         // the hash string
-        if let None = self.id {
+        if self.id.is_none() {
             return Err(ErrorCode::InvalidPasswordFormat);
         }
 

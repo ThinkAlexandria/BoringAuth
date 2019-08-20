@@ -83,10 +83,10 @@ impl HOTP {
     fn reduce_result(&self, hs: &[u8]) -> u32 {
         let offset = (hs[hs.len() - 1] & 0xf) as usize;
         let hash = hs[offset..offset + 4].to_vec();
-        let snum: u32 = ((hash[0] as u32 & 0x7f) << 24)
-            | ((hash[1] as u32 & 0xff) << 16)
-            | ((hash[2] as u32 & 0xff) << 8)
-            | (hash[3] as u32 & 0xff);
+        let snum: u32 = ((u32::from(hash[0]) & 0x7f) << 24)
+            | ((u32::from(hash[1]) & 0xff) << 16)
+            | ((u32::from(hash[2]) & 0xff) << 8)
+            | (u32::from(hash[3]) & 0xff);
 
         let base = self.output_base.len() as u32;
         snum % base.pow(self.output_len as u32)
@@ -99,7 +99,7 @@ impl HOTP {
 
         while nb > 0 {
             code.push(self.output_base[(nb % base_len) as usize]);
-            nb = nb / base_len;
+            nb /= base_len;
         }
         while code.len() != self.output_len {
             code.push(self.output_base[0]);
@@ -163,12 +163,12 @@ impl HOTP {
     ///     .is_valid(&user_code);
     /// assert_eq!(valid, true);
     /// ```
-    pub fn is_valid(&self, code: &String) -> bool {
+    pub fn is_valid(&self, code: &str) -> bool {
         if code.len() != self.output_len {
             return false;
         }
         let ref_code = self.generate().into_bytes();
-        let code = code.clone().into_bytes();
+        let code = code.as_bytes();
 
         use ring::hmac::sign;
         let (code, ref_code) = (
@@ -249,13 +249,12 @@ impl HOTPBuilder {
 
     /// Returns the finalized HOTP object.
     pub fn finalize(&self) -> Result<HOTP, ErrorCode> {
-        match self.runtime_error {
-            Some(e) => return Err(e),
-            None => (),
+        if let Some(e) = self.runtime_error {
+            return Err(e);
         }
         match self.code_length() {
-            n if n < 1000000 => return Err(ErrorCode::CodeTooSmall),
-            n if n > 2147483648 => return Err(ErrorCode::CodeTooBig),
+            n if n < 1_000_000 => return Err(ErrorCode::CodeTooSmall),
+            n if n > 2_147_483_648 => return Err(ErrorCode::CodeTooBig),
             _ => (),
         }
         match self.key {

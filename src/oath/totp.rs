@@ -79,7 +79,7 @@ impl TOTP {
         if timestamp < self.initial_time {
             panic!("The current Unix time is below the initial time.");
         }
-        (timestamp - self.initial_time) / self.period as u64
+        (timestamp - self.initial_time) / u64::from(self.period)
     }
 
     /// Generate the current TOTP value.
@@ -122,10 +122,10 @@ impl TOTP {
     ///     .unwrap()
     ///     .is_valid(&user_code);
     /// ```
-    pub fn is_valid(&self, code: &String) -> bool {
+    pub fn is_valid(&self, code: &str) -> bool {
         let base_counter = self.get_counter();
         for counter in
-            (base_counter - self.negative_tolerance)..(base_counter + self.positive_tolerance + 1)
+            (base_counter - self.negative_tolerance)..=(base_counter + self.positive_tolerance)
         {
             let hotp = HOTPBuilder::new()
                 .key(&self.key.clone())
@@ -260,13 +260,12 @@ impl TOTPBuilder {
 
     /// Returns the finalized TOTP object.
     pub fn finalize(&self) -> Result<TOTP, ErrorCode> {
-        match self.runtime_error {
-            Some(e) => return Err(e),
-            None => (),
+        if let Some(e) = self.runtime_error {
+            return Err(e);
         }
         match self.code_length() {
-            n if n < 1000000 => return Err(ErrorCode::CodeTooSmall),
-            n if n > 2147483648 => return Err(ErrorCode::CodeTooBig),
+            n if n < 1_000_000 => return Err(ErrorCode::CodeTooSmall),
+            n if n > 2_147_483_648 => return Err(ErrorCode::CodeTooBig),
             _ => (),
         }
         match self.key {

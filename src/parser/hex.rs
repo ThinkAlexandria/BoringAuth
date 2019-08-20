@@ -57,7 +57,7 @@
 
 use hex;
 
-pub fn from_hex(s: &String) -> Result<Vec<u8>, ()> {
+pub fn from_hex(s: &str) -> Result<Vec<u8>, ()> {
     hex::decode(s).map_err(|_| ())
 }
 
