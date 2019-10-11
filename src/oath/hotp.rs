@@ -69,14 +69,14 @@ pub struct HOTP {
 }
 
 impl HOTP {
-    fn signing_key(&self) -> ring::hmac::SigningKey {
-        use ring::digest::{SHA1, SHA256, SHA512};
-        use ring::hmac::SigningKey;
+    fn signing_key(&self) -> ring::hmac::Key {
+        use ring::hmac::{Key, HMAC_SHA1_FOR_LEGACY_USE_ONLY, HMAC_SHA256, HMAC_SHA512};
 
         match self.hash_function {
-            HashFunction::Sha1 => SigningKey::new(&SHA1, &self.key[..]),
-            HashFunction::Sha256 => SigningKey::new(&SHA256, &self.key[..]),
-            HashFunction::Sha512 => SigningKey::new(&SHA512, &self.key[..]),
+            #[allow(deprecated)]
+            HashFunction::Sha1 => Key::new(HMAC_SHA1_FOR_LEGACY_USE_ONLY, &self.key[..]),
+            HashFunction::Sha256 => Key::new(HMAC_SHA256, &self.key[..]),
+            HashFunction::Sha512 => Key::new(HMAC_SHA512, &self.key[..]),
         }
     }
 
@@ -123,9 +123,9 @@ impl HOTP {
     ///     .unwrap();
     ///
     /// let code = hotp.generate();
-    /// assert_eq!(code, "755224");
+    /// assert_eq!(code, "875740");
     /// let code = hotp.increment_counter().generate();
-    /// assert_eq!(code, "287082");
+    /// assert_eq!(code, "247374");
     /// ```
     pub fn generate(&self) -> String {
         let msg: [u8; 8] = [
@@ -155,7 +155,7 @@ impl HOTP {
     /// ## Examples
     /// ```
     /// let key_ascii = "12345678901234567890".to_owned();
-    /// let user_code = "755224".to_owned();
+    /// let user_code = "875740".to_owned();
     /// let valid = boringauth::oath::HOTPBuilder::new()
     ///     .ascii_key(&key_ascii)
     ///     .finalize()
@@ -175,7 +175,9 @@ impl HOTP {
             sign(&self.signing_key(), &code),
             sign(&self.signing_key(), &ref_code),
         );
-        code.as_ref() == ref_code.as_ref()
+        ring::constant_time::verify_slices_are_equal(code.as_ref(), ref_code.as_ref())
+            .map(|()| true)
+            .unwrap_or(false)
     }
 }
 
@@ -234,7 +236,7 @@ impl HOTPBuilder {
             counter: 0,
             output_len: 6,
             output_base: "0123456789".to_owned().into_bytes(),
-            hash_function: HashFunction::Sha1,
+            hash_function: HashFunction::Sha256,
             runtime_error: None,
         }
     }
@@ -372,13 +374,13 @@ mod tests {
         assert_eq!(hotp.counter, 0);
         assert_eq!(hotp.output_len, 6);
         match hotp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
         let code = hotp.generate();
         assert_eq!(code.len(), 6);
-        assert_eq!(code, "755224");
+        assert_eq!(code, "875740");
     }
 
     #[test]
@@ -421,13 +423,13 @@ mod tests {
         assert_eq!(hotp.counter, 0);
         assert_eq!(hotp.output_len, 6);
         match hotp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
         let code = hotp.generate();
         assert_eq!(code.len(), 6);
-        assert_eq!(code, "755224");
+        assert_eq!(code, "875740");
     }
 
     #[test]
@@ -471,13 +473,13 @@ mod tests {
         assert_eq!(hotp.counter, 0);
         assert_eq!(hotp.output_len, 6);
         match hotp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
         let code = hotp.generate();
         assert_eq!(code.len(), 6);
-        assert_eq!(code, "755224");
+        assert_eq!(code, "875740");
     }
 
     #[test]
@@ -524,13 +526,13 @@ mod tests {
         assert_eq!(hotp.counter, 0);
         assert_eq!(hotp.output_len, 6);
         match hotp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
         let code = hotp.generate();
         assert_eq!(code.len(), 6);
-        assert_eq!(code, "755224");
+        assert_eq!(code, "875740");
     }
 
     #[test]
@@ -744,15 +746,20 @@ mod tests {
             ["399871", "23443F"],
             ["520489", "79DC69"],
         ];
-        let mut hotp1 = HOTPBuilder::new().ascii_key(&key_ascii).finalize().unwrap();
+        let mut hotp1 = HOTPBuilder::new()
+            .ascii_key(&key_ascii)
+            .hash_function(HashFunction::Sha1)
+            .finalize()
+            .unwrap();
         let mut hotp2 = HOTPBuilder::new()
             .key(&key)
-            .counter(0)
             .hash_function(HashFunction::Sha1)
+            .counter(0)
             .finalize()
             .unwrap();
         let mut hotp3 = HOTPBuilder::new()
             .ascii_key(&key_ascii)
+            .hash_function(HashFunction::Sha1)
             .output_base(&hex_base)
             .finalize()
             .unwrap();

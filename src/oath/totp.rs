@@ -206,7 +206,7 @@ impl TOTPBuilder {
             initial_time: 0,
             output_len: 6,
             output_base: "0123456789".to_owned().into_bytes(),
-            hash_function: HashFunction::Sha1,
+            hash_function: HashFunction::Sha256,
             runtime_error: None,
         }
     }
@@ -410,7 +410,7 @@ mod tests {
         assert_eq!(totp.key, key);
         assert_eq!(totp.output_len, 6);
         match totp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
@@ -454,7 +454,7 @@ mod tests {
         assert_eq!(totp.key, key);
         assert_eq!(totp.output_len, 6);
         match totp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
@@ -499,7 +499,7 @@ mod tests {
         assert_eq!(totp.key, key);
         assert_eq!(totp.output_len, 6);
         match totp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
@@ -547,7 +547,7 @@ mod tests {
         assert_eq!(totp.key, key);
         assert_eq!(totp.output_len, 6);
         match totp.hash_function {
-            HashFunction::Sha1 => assert!(true),
+            HashFunction::Sha256 => assert!(true),
             _ => assert!(false),
         }
 
@@ -793,7 +793,7 @@ mod tests {
     #[test]
     fn test_valid_code() {
         let key_ascii = "12345678901234567890".to_owned();
-        let user_code = "94287082".to_owned();
+        let user_code = "32247374".to_owned();
         let valid = TOTPBuilder::new()
             .ascii_key(&key_ascii)
             .timestamp(59)
@@ -808,14 +808,14 @@ mod tests {
     fn test_tolerance() {
         let key_ascii = "12345678901234567890".to_owned();
         let examples = [
-            (1234567890, 0, "590587", false), // +1
-            (1234567890, 1, "590587", true),  // +1
-            (1234567890, 1, "240500", false), // +2
-            (1234567890, 2, "240500", true),  // +2
-            (1234567890, 0, "980357", false), // -1
-            (1234567890, 1, "980357", true),  // -1
-            (1234567890, 1, "186057", false), // -2
-            (1234567890, 2, "186057", true),  // -2
+            (1234567890, 0, "972460", false), // +1
+            (1234567890, 1, "972460", true),  // +1
+            (1234567890, 1, "423922", false), // +2
+            (1234567890, 2, "423922", true),  // +2
+            (1234567890, 0, "373844", false), // -1
+            (1234567890, 1, "373844", true),  // -1
+            (1234567890, 1, "401986", false), // -2
+            (1234567890, 2, "401986", true),  // -2
         ];
         for &(timestamp, tolerance, user_code, validity) in examples.iter() {
             let valid = TOTPBuilder::new()
@@ -825,7 +825,7 @@ mod tests {
                 .finalize()
                 .unwrap()
                 .is_valid(&user_code.to_owned());
-            assert_eq!(valid, validity);
+            assert_eq!(valid, validity, "user_code={}", user_code);
         }
     }
 
@@ -833,14 +833,14 @@ mod tests {
     fn test_positive_tolerance() {
         let key_ascii = "12345678901234567890".to_owned();
         let examples = [
-            (1234567890, 0, "590587", false), // +1
-            (1234567890, 1, "590587", true),  // +1
-            (1234567890, 1, "240500", false), // +2
-            (1234567890, 2, "240500", true),  // +2
-            (1234567890, 0, "980357", false), // -1
-            (1234567890, 1, "980357", false), // -1
-            (1234567890, 1, "186057", false), // -2
-            (1234567890, 2, "186057", false), // -2
+            (1234567890, 0, "972460", false), // +1
+            (1234567890, 1, "972460", true),  // +1
+            (1234567890, 1, "423922", false), // +2
+            (1234567890, 2, "423922", true),  // +2
+            (1234567890, 0, "373844", false), // -1
+            (1234567890, 1, "373844", false), // -1
+            (1234567890, 1, "401986", false), // -2
+            (1234567890, 2, "401986", false), // -2
         ];
         for &(timestamp, tolerance, user_code, validity) in examples.iter() {
             let valid = TOTPBuilder::new()
@@ -858,14 +858,14 @@ mod tests {
     fn test_negative_tolerance() {
         let key_ascii = "12345678901234567890".to_owned();
         let examples = [
-            (1234567890, 0, "590587", false), // +1
-            (1234567890, 1, "590587", false), // +1
-            (1234567890, 1, "240500", false), // +2
-            (1234567890, 2, "240500", false), // +2
-            (1234567890, 0, "980357", false), // -1
-            (1234567890, 1, "980357", true),  // -1
-            (1234567890, 1, "186057", false), // -2
-            (1234567890, 2, "186057", true),  // -2
+            (1234567890, 0, "972460", false), // +1
+            (1234567890, 1, "972460", false), // +1
+            (1234567890, 1, "423922", false), // +2
+            (1234567890, 2, "423922", false), // +2
+            (1234567890, 0, "373844", false), // -1
+            (1234567890, 1, "373844", true),  // -1
+            (1234567890, 1, "401986", false), // -2
+            (1234567890, 2, "401986", true),  // -2
         ];
         for &(timestamp, tolerance, user_code, validity) in examples.iter() {
             let valid = TOTPBuilder::new()

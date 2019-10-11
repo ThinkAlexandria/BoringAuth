@@ -58,6 +58,7 @@
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub enum HashFunction {
+    #[deprecated]
     Sha1 = 1,
     Sha256 = 2,
     Sha512 = 3,

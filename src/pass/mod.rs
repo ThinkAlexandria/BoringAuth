@@ -127,7 +127,8 @@
 //! [2]: https://pythonhosted.org/passlib/modular_crypt_format.html
 
 use rand::{thread_rng, RngCore};
-use ring::{self, digest};
+use ring;
+use ring::pbkdf2::{self, PBKDF2_HMAC_SHA256, PBKDF2_HMAC_SHA512};
 use std::collections::HashMap;
 use std::num::NonZeroU32;
 
@@ -279,7 +280,7 @@ fn from_reference_hash(
                 let mut out: Vec<u8> = vec![0; output_len];
 
                 ring::pbkdf2::derive(
-                    &digest::SHA256,
+                    PBKDF2_HMAC_SHA256,
                     iterations,
                     &salt[..],
                     password.as_bytes(),
@@ -319,7 +320,7 @@ fn from_reference_hash(
                 let mut out: Vec<u8> = vec![0; output_len];
 
                 ring::pbkdf2::derive(
-                    &digest::SHA512,
+                    PBKDF2_HMAC_SHA512,
                     iterations,
                     &salt[..],
                     password.as_bytes(),
@@ -403,17 +404,17 @@ pub fn is_valid(password: &str, reference: &str) -> bool {
         Ok(x) => x,
         Err(_) => return false,
     };
-    let algorithm: &'static digest::Algorithm = match hash_info.id {
+    let algorithm: pbkdf2::Algorithm = match hash_info.id {
         Some(ref scheme_id) => match scheme_id.as_ref() {
-            "pbkdf2_sha512" => &digest::SHA512,
-            "pbkdf2_sha256" => &digest::SHA256,
+            "pbkdf2_sha512" => PBKDF2_HMAC_SHA512,
+            "pbkdf2_sha256" => PBKDF2_HMAC_SHA256,
             "pbkdf2" => match hash_info.parameters.get("h") {
                 Some(h) => match h.as_ref() {
-                    "sha512" => &digest::SHA512,
-                    "sha256" => &digest::SHA256,
+                    "sha512" => PBKDF2_HMAC_SHA512,
+                    "sha256" => PBKDF2_HMAC_SHA256,
                     _ => return false,
                 },
-                None => &digest::SHA512,
+                None => PBKDF2_HMAC_SHA512,
             },
             _ => return false,
         },

@@ -9,7 +9,7 @@ SRC     = test_boringauth.c \
 OBJ     = $(SRC:.c=.o)
 CC      = clang
 CFLAGS  = -std=c11 -g -Wall -Wextra -Wpedantic -Wshadow -Werror -Wstrict-overflow -fno-strict-aliasing -I$(INCDIR)
-LDFLAGS = -L$(LIBDIR) -lboringauth
+LDFLAGS = -L $(LIBDIR) -lboringauth
 PYSRC   = boringauth_test
 
 

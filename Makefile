@@ -25,6 +25,7 @@ debug:
 	@cargo build --features "cbindings"
 
 test:
+	@cargo build --features "cbindings"
 	@cargo test --features "cbindings"
 	@make -C tests clean test
 	@echo
@@ -48,7 +49,7 @@ release: test
 	@git push origin $(TAG_NAME)
 	@cargo package
 	@cargo publish
-	@make sync_doc
+	# @make sync_doc
 	@echo "$(NAME) $(VERSION) released."
 
 sync_doc: test doc
